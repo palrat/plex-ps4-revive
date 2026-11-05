@@ -30,8 +30,9 @@ You do **not** need any other tools, and you do not need a PSN account.
 
 ## Step 1 — Download this tool
 
-On this page, click the green **Code** button, then **Download ZIP**. Unzip the
-file. You now have a folder called `plex-ps4-revive-main`.
+Open the [latest release](https://github.com/palrat/plex-ps4-revive/releases/latest)
+and download `plex-ps4-revive-v1.0.0.zip`. Unzip it. You now have a folder called
+`plex-ps4-revive`.
 
 ## Step 2 — Download the Plex package
 
@@ -39,7 +40,7 @@ Get **Plex**, version **2.03**, from the **Homebrew Store** (PKG-Zone), title ID
 `CUSA01850`. Download it on your computer, not on the PS4. The file is called
 `PS4_CUSA01850_v2.03.pkg` and is about 66 MB.
 
-Put this file into the `plex-ps4-revive-main` folder.
+Put this file into the `plex-ps4-revive` folder.
 
 ## Step 3 — Run the tool
 
@@ -57,7 +58,7 @@ helper program. At the end it says:
 
 ```
 Done! Your new package:
-    .../plex-ps4-revive-main/output/Plex-revived-v03.05.pkg
+    .../plex-ps4-revive/output/Plex-revived-v03.05.pkg
 ```
 
 If it says **STOPPED** instead, read the message — it tells you what to do. The tool
@@ -135,6 +136,20 @@ and blocks Sony's update servers, while all other addresses — including your P
 server — work normally.
 
 ---
+
+## Safety
+
+- The release ZIP contains only what you see in this repository: two Python/batch
+  scripts, text files, and the fixed LibOrbisPkg build in `third_party/` (source
+  patch included, reproducible — see its README). VirusTotal scans are linked on
+  the [release page](https://github.com/palrat/plex-ps4-revive/releases/latest).
+- On first use the tool downloads only from the original sources and checks every
+  download against a fixed SHA-256 before using it:
+  - Windows: `PkgTool-0.2.231.zip` from the
+    [LibOrbisPkg release page](https://github.com/maxton/LibOrbisPkg/releases/tag/v0.2)
+  - macOS/Linux: the official .NET 10 runtime from
+    [Microsoft](https://dotnet.microsoft.com/download/dotnet/10.0)
+- It changes nothing on your computer outside its own folder and installs nothing.
 
 ## For the curious
 
