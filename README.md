@@ -141,8 +141,10 @@ server — work normally.
 
 - The release ZIP contains only what you see in this repository: two Python/batch
   scripts, text files, and the fixed LibOrbisPkg build in `third_party/` (source
-  patch included, reproducible — see its README). VirusTotal scans are linked on
-  the [release page](https://github.com/palrat/plex-ps4-revive/releases/latest).
+  patch included, reproducible — see its README). VirusTotal scans:
+  [release ZIP](https://www.virustotal.com/gui/file/71f9211335e50b61e8ee8a491c7f3d38ad963902d051200b8899f4a830430271),
+  [PkgTool.Core.dll](https://www.virustotal.com/gui/file/2061489481647c59176db5a57d5f3a40b3ce611fc1cf8a3ab4a4c5efa4b06f58),
+  [LibOrbisPkg.Core.dll](https://www.virustotal.com/gui/file/5a01e44d5ecc10e723387d5c1a014643879e3c027ce62428df73d6d882a00009).
 - On first use the tool downloads only from the original sources and checks every
   download against a fixed SHA-256 before using it:
   - Windows: `PkgTool-0.2.231.zip` from the
