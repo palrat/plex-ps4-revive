@@ -1,0 +1,320 @@
+diff --git a/LibOrbisPkg/PFS/PFSBuilder.cs b/LibOrbisPkg/PFS/PFSBuilder.cs
+index 1eacced..840de4b 100644
+--- a/LibOrbisPkg/PFS/PFSBuilder.cs
++++ b/LibOrbisPkg/PFS/PFSBuilder.cs
+@@ -1,4 +1,4 @@
+-﻿using LibOrbisPkg.Util;
++using LibOrbisPkg.Util;
+ using System;
+ using System.Collections.Generic;
+ using System.IO;
+@@ -244,7 +244,7 @@ namespace LibOrbisPkg.PFS
+         {
+           var sig_buffer = new byte[sig.Size];
+           stream.Position = sig.Block * properties.BlockSize;
+-          stream.Read(sig_buffer, 0, sig.Size);
++          stream.ReadFully(sig_buffer, 0, sig.Size);
+           stream.Position = sig.SigOffset;
+           stream.Write(Crypto.HmacSha256(signKey, sig_buffer), 0, 32);
+           stream.WriteLE((int)sig.Block);
+@@ -260,7 +260,7 @@ namespace LibOrbisPkg.PFS
+         foreach (var xtsSector in XtsSectorGen())
+         {
+           stream.Position = xtsSector * xtsSectorSize;
+-          stream.Read(sectorBuffer, 0, xtsSectorSize);
++          stream.ReadFully(sectorBuffer, 0, xtsSectorSize);
+           transformer.EncryptSector(sectorBuffer, (ulong)xtsSector);
+           stream.Position = xtsSector * xtsSectorSize;
+           stream.Write(sectorBuffer, 0, xtsSectorSize);
+diff --git a/LibOrbisPkg/PFS/PFSCReader.cs b/LibOrbisPkg/PFS/PFSCReader.cs
+index 12c6c1b..baa646d 100644
+--- a/LibOrbisPkg/PFS/PFSCReader.cs
++++ b/LibOrbisPkg/PFS/PFSCReader.cs
+@@ -1,4 +1,4 @@
+-﻿using System;
++using System;
+ using System.Runtime.InteropServices;
+ using System.IO.MemoryMappedFiles;
+ using System.IO;
+@@ -84,7 +84,7 @@ namespace LibOrbisPkg.PFS
+         using (var bufStream = new MemoryStream(sectorBuf))
+         using (var ds = new DeflateStream(bufStream, CompressionMode.Decompress))
+         {
+-          ds.Read(output, 0, hdr.BlockSz);
++          ds.ReadFully(output, 0, hdr.BlockSz);
+         }
+       }
+     }
+diff --git a/LibOrbisPkg/PKG/Entry.cs b/LibOrbisPkg/PKG/Entry.cs
+index c0afad7..71608ca 100644
+--- a/LibOrbisPkg/PKG/Entry.cs
++++ b/LibOrbisPkg/PKG/Entry.cs
+@@ -1,4 +1,4 @@
+-﻿using System;
++using System;
+ using System.Collections.Generic;
+ using System.IO;
+ using System.Linq;
+@@ -437,7 +437,7 @@ namespace LibOrbisPkg.PKG
+       ret.set_digests = (GeneralDigest)s.ReadUInt32BE();
+       for(var d = GeneralDigest.ContentDigest; (int)d < 1 << 15; d = (GeneralDigest)((int)d << 1))
+       {
+-        s.Read(ret.Digests[d], 0, 32);
++        s.ReadFully(ret.Digests[d], 0, 32);
+       }
+       return ret;
+     }
+diff --git a/LibOrbisPkg/PKG/PkgReader.cs b/LibOrbisPkg/PKG/PkgReader.cs
+index d42e094..e5b2259 100644
+--- a/LibOrbisPkg/PKG/PkgReader.cs
++++ b/LibOrbisPkg/PKG/PkgReader.cs
+@@ -1,4 +1,4 @@
+-﻿using System;
++using System;
+ using LibOrbisPkg.Util;
+ 
+ namespace LibOrbisPkg.PKG
+@@ -73,7 +73,7 @@ namespace LibOrbisPkg.PKG
+             {
+               var licenseDatBytes = new byte[entry.DataSize];
+               s.Position = entry.DataOffset;
+-              s.Read(licenseDatBytes, 0, (int)entry.DataSize);
++              s.ReadFully(licenseDatBytes, 0, (int)entry.DataSize);
+               using (var ms = new System.IO.MemoryStream(Entry.Decrypt(licenseDatBytes, pkg, entry)))
+               {
+                 pkg.LicenseDat = new Rif.LicenseDatReader(ms).Read();
+diff --git a/LibOrbisPkg/Util/MemoryMapped.cs b/LibOrbisPkg/Util/MemoryMapped.cs
+index 8f2ca5e..0506086 100644
+--- a/LibOrbisPkg/Util/MemoryMapped.cs
++++ b/LibOrbisPkg/Util/MemoryMapped.cs
+@@ -1,4 +1,4 @@
+-﻿using System;
++using System;
+ using System.IO;
+ using System.IO.MemoryMappedFiles;
+ using System.Runtime.InteropServices;
+@@ -205,7 +205,7 @@ namespace LibOrbisPkg.Util
+     public void Read(long pos, byte[] buf, int offset, int count)
+     {
+       stream.Position = pos + startOffset;
+-      stream.Read(buf, offset, count);
++      stream.ReadFully(buf, offset, count);
+     }
+   }
+   public class StreamWrapper : Stream
+diff --git a/LibOrbisPkg/Util/ReaderBase.cs b/LibOrbisPkg/Util/ReaderBase.cs
+index d848ac4..bcafce2 100644
+--- a/LibOrbisPkg/Util/ReaderBase.cs
++++ b/LibOrbisPkg/Util/ReaderBase.cs
+@@ -1,4 +1,4 @@
+-﻿using System.IO;
++using System.IO;
+ using System.Runtime.InteropServices;
+ 
+ namespace LibOrbisPkg.Util
+@@ -69,7 +69,7 @@ namespace LibOrbisPkg.Util
+     protected byte[] ReadBytes(int count)
+     {
+       var ret = new byte[count];
+-      s.Read(ret, 0, count);
++      s.ReadFully(ret, 0, count);
+       return ret;
+     }
+   }
+diff --git a/LibOrbisPkg/Util/StreamExtensions.cs b/LibOrbisPkg/Util/StreamExtensions.cs
+index 9939b38..c06075c 100644
+--- a/LibOrbisPkg/Util/StreamExtensions.cs
++++ b/LibOrbisPkg/Util/StreamExtensions.cs
+@@ -1,4 +1,4 @@
+-﻿/*
++/*
+  * I hereby release this file, StreamExtensions.cs, to the public domain.
+  * Use it if you wish.
+  */
+@@ -9,6 +9,20 @@ namespace LibOrbisPkg.Util
+ {
+   internal static class StreamExtensions
+   {
++    /// <summary>Read exactly count bytes (or until end of stream). Stream.Read may return
++    /// fewer bytes than requested; since .NET 6 DeflateStream and CryptoStream do.</summary>
++    public static int ReadFully(this Stream s, byte[] buffer, int offset, int count)
++    {
++      int total = 0;
++      while (count > 0)
++      {
++        int n = s.Read(buffer, offset, count);
++        if (n <= 0) break;
++        offset += n; count -= n; total += n;
++      }
++      return total;
++    }
++
+     /// <summary>
+     /// Read a signed 8-bit integer from the stream.
+     /// </summary>
+@@ -25,7 +39,7 @@ namespace LibOrbisPkg.Util
+     {
+       byte ret;
+       byte[] tmp = new byte[1];
+-      s.Read(tmp, 0, 1);
++      s.ReadFully(tmp, 0, 1);
+       ret = tmp[0];
+       return ret;
+     }
+@@ -46,7 +60,7 @@ namespace LibOrbisPkg.Util
+     {
+       int ret;
+       byte[] tmp = new byte[2];
+-      s.Read(tmp, 0, 2);
++      s.ReadFully(tmp, 0, 2);
+       ret = tmp[0] & 0x00FF;
+       ret |= (tmp[1] << 8) & 0xFF00;
+       return (short)ret;
+@@ -81,7 +95,7 @@ namespace LibOrbisPkg.Util
+     {
+       int ret;
+       byte[] tmp = new byte[2];
+-      s.Read(tmp, 0, 2);
++      s.ReadFully(tmp, 0, 2);
+       ret = (tmp[0] << 8) & 0xFF00;
+       ret |= tmp[1] & 0x00FF;
+       return (short)ret;
+@@ -109,7 +123,7 @@ namespace LibOrbisPkg.Util
+     {
+       int ret;
+       byte[] tmp = new byte[3];
+-      s.Read(tmp, 0, 3);
++      s.ReadFully(tmp, 0, 3);
+       ret = tmp[0] & 0x0000FF;
+       ret |= (tmp[1] << 8) & 0x00FF00;
+       ret |= (tmp[2] << 16) & 0xFF0000;
+@@ -125,7 +139,7 @@ namespace LibOrbisPkg.Util
+     {
+       int ret;
+       byte[] tmp = new byte[3];
+-      s.Read(tmp, 0, 3);
++      s.ReadFully(tmp, 0, 3);
+       ret = tmp[0] & 0x0000FF;
+       ret |= (tmp[1] << 8) & 0x00FF00;
+       ret |= (tmp[2] << 16) & 0xFF0000;
+@@ -145,7 +159,7 @@ namespace LibOrbisPkg.Util
+     {
+       int ret;
+       byte[] tmp = new byte[3];
+-      s.Read(tmp, 0, 3);
++      s.ReadFully(tmp, 0, 3);
+       ret = tmp[2] & 0x0000FF;
+       ret |= (tmp[1] << 8) & 0x00FF00;
+       ret |= (tmp[0] << 16) & 0xFF0000;
+@@ -161,7 +175,7 @@ namespace LibOrbisPkg.Util
+     {
+       int ret;
+       byte[] tmp = new byte[3];
+-      s.Read(tmp, 0, 3);
++      s.ReadFully(tmp, 0, 3);
+       ret = tmp[2] & 0x0000FF;
+       ret |= (tmp[1] << 8) & 0x00FF00;
+       ret |= (tmp[0] << 16) & 0xFF0000;
+@@ -188,7 +202,7 @@ namespace LibOrbisPkg.Util
+     {
+       int ret;
+       byte[] tmp = new byte[4];
+-      s.Read(tmp, 0, 4);
++      s.ReadFully(tmp, 0, 4);
+       ret = tmp[0] & 0x000000FF;
+       ret |= (tmp[1] << 8) & 0x0000FF00;
+       ret |= (tmp[2] << 16) & 0x00FF0000;
+@@ -227,7 +241,7 @@ namespace LibOrbisPkg.Util
+     {
+       int ret;
+       byte[] tmp = new byte[4];
+-      s.Read(tmp, 0, 4);
++      s.ReadFully(tmp, 0, 4);
+       ret = (tmp[0] << 24);
+       ret |= (tmp[1] << 16) & 0x00FF0000;
+       ret |= (tmp[2] << 8) & 0x0000FF00;
+@@ -266,7 +280,7 @@ namespace LibOrbisPkg.Util
+     {
+       long ret;
+       byte[] tmp = new byte[8];
+-      s.Read(tmp, 0, 8);
++      s.ReadFully(tmp, 0, 8);
+       ret = tmp[4] & 0x000000FFL;
+       ret |= (tmp[5] << 8) & 0x0000FF00L;
+       ret |= (tmp[6] << 16) & 0x00FF0000L;
+@@ -315,7 +329,7 @@ namespace LibOrbisPkg.Util
+     {
+       long ret;
+       byte[] tmp = new byte[8];
+-      s.Read(tmp, 0, 8);
++      s.ReadFully(tmp, 0, 8);
+       ret = tmp[3] & 0x000000FFL;
+       ret |= (tmp[2] << 8) & 0x0000FF00L;
+       ret |= (tmp[1] << 16) & 0x00FF0000L;
+@@ -376,7 +390,7 @@ namespace LibOrbisPkg.Util
+     public static float ReadFloat(this Stream s)
+     {
+       byte[] tmp = new byte[4];
+-      s.Read(tmp, 0, 4);
++      s.ReadFully(tmp, 0, 4);
+       return BitConverter.ToSingle(tmp, 0);
+     }
+ 
+@@ -407,7 +421,7 @@ namespace LibOrbisPkg.Util
+     {
+       int length = s.ReadInt32LE();
+       byte[] chars = new byte[length];
+-      s.Read(chars, 0, length);
++      s.ReadFully(chars, 0, length);
+       return e.GetString(chars);
+     }
+ 
+@@ -432,7 +446,7 @@ namespace LibOrbisPkg.Util
+       // Size of returned array at most count, at least difference between position and length.
+       int realCount = (int)((s.Position + count > s.Length) ? (s.Length - s.Position) : count);
+       byte[] ret = new byte[realCount];
+-      s.Read(ret, 0, realCount);
++      s.ReadFully(ret, 0, realCount);
+       return ret;
+     }
+ 
+diff --git a/PkgTool/Program.cs b/PkgTool/Program.cs
+index 3f3c0a0..65ccc2b 100644
+--- a/PkgTool/Program.cs
++++ b/PkgTool/Program.cs
+@@ -1,4 +1,4 @@
+-﻿using System;
++using System;
+ using System.Collections.Generic;
+ using System.IO;
+ using System.IO.MemoryMappedFiles;
+@@ -15,6 +15,11 @@ namespace PkgTool
+ {
+   class Program
+   {
++    static void ReadFully(System.IO.Stream s, byte[] b, int o, int c)
++    {
++      while (c > 0) { int n = s.Read(b, o, c); if (n <= 0) break; o += n; c -= n; }
++    }
++
+     static void Main(string[] args)
+     {
+       Verb.Run(Verbs, args, AppDomain.CurrentDomain.FriendlyName);
+@@ -194,7 +199,7 @@ namespace PkgTool
+             {
+               var pfs_seed = new byte[16];
+               outer_pfs.Position = 0x370;
+-              outer_pfs.Read(pfs_seed, 0, 16);
++              ReadFully(outer_pfs, pfs_seed, 0, 16);
+               var outerpfs_size = outer_pfs.Length;
+               byte[] tweakKey, dataKey;
+               if (passcode != null)
+@@ -283,7 +288,7 @@ namespace PkgTool
+                 {
+                   var entry = new SubStream(pkgFile, meta.DataOffset, totalEntrySize);
+                   var tmp = new byte[totalEntrySize];
+-                  entry.Read(tmp, 0, tmp.Length);
++                  ReadFully(entry, tmp, 0, tmp.Length);
+                   tmp = meta.KeyIndex == 3 ? Entry.Decrypt(tmp, pkg, meta) : Entry.Decrypt(tmp, pkg.Header.content_id, passcode, meta);
+                   outFile.Write(tmp, 0, (int)meta.DataSize);
+                   return;

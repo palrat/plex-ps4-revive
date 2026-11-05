@@ -1,0 +1,7 @@
+work/
+output/
+tools/
+input/
+*.pkg
+__pycache__/
+*.pyc
